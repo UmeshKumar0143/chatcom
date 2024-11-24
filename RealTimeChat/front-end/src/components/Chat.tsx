@@ -1,32 +1,49 @@
 import { useState, useEffect, useRef } from "react"
 import { Send } from "lucide-react"
 
+interface message  {
+    text: string;
+    type: "sent" | "received"; 
+}
+
 export default function Chat() {
-    const [messages, setMessages] = useState([
-        { text: "Hello there!", type: "sent" },
-        { text: "Hi! How are you?", type: "received" },
-        { text: "I'm doing great!", type: "sent" },
-        { text: "What are you up to today?", type: "received" },
-        { text: "Just working on some coding projects", type: "sent" },
-        { text: "That's cool!", type: "received" }
-    ])
+    const [messages, setMessages] = useState<message[]>([])
     
     const [newMessage, setNewMessage] = useState("")
-    const chatBoxRef = useRef(null)
+    const chatBoxRef = useRef()
+    const wsRef = useRef<WebSocket>(); 
+        
 
     useEffect(() => {
         if (chatBoxRef.current) {
-            chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight
+            chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
         }
-    }, [messages])
+    }, [messages]);
 
+    useEffect(()=>{
+        const ws = new WebSocket("http://localhost:8080"); 
+        wsRef.current = ws; 
+
+        ws.onopen = () =>{
+            console.log("Connected"); 
+         }
+
+        ws.onmessage= (event)=>{
+        setMessages(s=>[...s,{text:event.data,type:"received"}])
+         console.log(event.data); 
+        }
+        
+
+       
+
+        
+    },[])
     const handleSend = () => {
         if (newMessage.trim()) {
-            const newMsg = {
-                text: newMessage.trim(),
-                type: "sent"
+            if(wsRef.current){
+            wsRef.current.send(JSON.stringify(newMessage));
             }
-            setMessages(prev => [...prev, newMsg])
+            setMessages(prev => [...prev, {text:newMessage,type:"sent"}]); 
             setNewMessage("")
         }
     }
