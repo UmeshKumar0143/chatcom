@@ -1,9 +1,10 @@
+import Navbar from './components/Navbar';
 import './index.css'; 
 function App() {
 
-  return (
-    <div className='text-blue-600 text-xl'>hello </div>
-  )
+  return <>
+  <Navbar/>
+  </>
 }
 
 export default App
